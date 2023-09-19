@@ -9,6 +9,48 @@ PyTorch implementation and pretrained models for DINO. For details, see **Emergi
   <img width="100%" alt="DINO illustration" src=".github/dino.gif">
 </div>
 
+# fork 목적과 진행 과정
+
+오리온 매대인식 프로젝트의 경우 라벨링 데이터 확보가 어렵지만 미라벨 데이터의 경우 매월 약 40GB의 데이터가 확보됨  
+이를 활용하기 위한 self-supervised 방식을 활용할 경우
+* 모여진 대용량 미라벨 이미지를 이용하여 모델 훈련
+* 각 과자별 10장에서 ~20장 정도 분류
+* KNN classification  
+
+이와 같이 진행시 라벨링에 많은 비용없이 작업 가능  
+
+imagenet 변환 코드 [/230821_1369/imagenet_format.py](https://github.com/aithenutrigene-image/Orion_Shelf_Classification_Test/blob/main/imagenet_format.py) 를 이용하여 오리온 이미지를 imagenet 형식으로 변경
+
+
+몇몇 코드 수정 후 아래 코드 진행
+
+첫 진행시
+```bash
+python eval_knn.py --dump_features "/workspace/dump_features" --data_path "/workspace/imagenet"
+```
+저장된 파라미터 활용 시
+```bash
+python eval_knn.py --load_features "/workspace/dump_features" --data_path "/workspace/imagenet"
+```
+
+결과
+| classifier result | Top1 | Top5 |
+| ---|---|---|
+|  10-NN | 0.019519812609798945 | 0.10150302557095452 |
+|  20-NN | 0.019519812609798945 | 0.1093109506148741 |
+| 100-NN | 0.011711887565879368 | 0.11321491313683389 |
+| 200-NN | 0.011711887565879368 | 0.11321491313683389 |
+
+추가 훈련 없이 배포 모델을 바로 사용시 낮은 성능 확인  
+이를 해결 하기 위해선 DINO 모델의 훈련 과정이 필요
+
+* 테스트용 pog 이미지 40 GB 활용
+* object detection : DINO 진행하여 과자 이미지 추출
+* 추출 이미지를 이용하여 self-supervised : DINO 모델 훈련 
+* 훈련 모델을 이용 evaluation 진행
+
+위 과정 진행 예정
+
 ## Pretrained models
 You can choose to download only the weights of the pretrained backbone used for downstream tasks, or the full checkpoint which contains backbone and projection head weights for both student and teacher networks. We also provide the backbone in `onnx` format, as well as detailed arguments and training/evaluation logs. Note that `DeiT-S` and `ViT-S` names refer exactly to the same architecture.
 

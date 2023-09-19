@@ -155,10 +155,10 @@ def knn_classifier(train_features, train_labels, test_features, test_labels, k, 
         batch_size = targets.shape[0]
 
         # calculate the dot product and compute top-k neighbors
-        similarity = torch.mm(features, train_features)
-        distances, indices = similarity.topk(k, largest=True, sorted=True)
-        candidates = train_labels.view(1, -1).expand(batch_size, -1)
-        retrieved_neighbors = torch.gather(candidates, 1, indices)
+        similarity = torch.mm(features, train_features) # train data간의 distance 확인
+        distances, indices = similarity.topk(k, largest=True, sorted=True) # 가장 유사한 top k = 10의 값(distances)과 위치(indices) 확인
+        candidates = train_labels.view(1, -1).expand(batch_size, -1) # train의 라벨 확인
+        retrieved_neighbors = torch.gather(candidates, 1, indices) # cnadidates의 1차원 indices 위치 값 반환
 
         retrieval_one_hot.resize_(batch_size * k, num_classes).zero_()
         retrieval_one_hot.scatter_(1, retrieved_neighbors.view(-1, 1), 1)
@@ -237,6 +237,6 @@ if __name__ == '__main__':
         print("Features are ready!\nStart the k-NN classification.")
         for k in args.nb_knn:
             top1, top5 = knn_classifier(train_features, train_labels,
-                test_features, test_labels, k, args.temperature)
+                test_features, test_labels, k, args.temperature, 1369)
             print(f"{k}-NN classifier result: Top1: {top1}, Top5: {top5}")
     dist.barrier()
