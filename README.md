@@ -33,13 +33,13 @@ python eval_knn.py --dump_features "/workspace/dump_features" --data_path "/work
 python eval_knn.py --load_features "/workspace/dump_features" --data_path "/workspace/imagenet"
 ```
 
-결과
+base 결과
 | classifier result | Top1 | Top5 |
 | ---|---|---|
-|  10-NN | 0.019519812609798945 | 0.10150302557095452 |
-|  20-NN | 0.019519812609798945 | 0.1093109506148741 |
-| 100-NN | 0.011711887565879368 | 0.11321491313683389 |
-| 200-NN | 0.011711887565879368 | 0.11321491313683389 |
+| 10-NN  | 0.035135662697638105 | 0.11321491313683389 |
+| 20-NN  | 0.03903962521959789  | 0.14835057583447198 |
+| 100-NN | 0.035135662697638105 | 0.16006246340035135 |
+| 200-NN | 0.027327737653718525 | 0.1444466133125122  |
 
 추가 훈련 없이 배포 모델을 바로 사용시 낮은 성능 확인  
 이를 해결 하기 위해선 DINO 모델의 훈련 과정이 필요
@@ -49,7 +49,26 @@ python eval_knn.py --load_features "/workspace/dump_features" --data_path "/work
 * 추출 이미지를 이용하여 self-supervised : DINO 모델 훈련 
 * 훈련 모델을 이용 evaluation 진행
 
-위 과정 진행 예정
+207 서버에 pytorch/pytorch:1.12.1-cuda11.3-cudnn8-devel 환경을 이용하여 훈련 진행
+```bash
+docker run --name orion-dino -it --gpus '"device=1,2"' --ipc=host -v `pwd`/orion_shelf_dino:/workspace pytorch/pytorch:1.12.1-cuda11.3-cudnn8-devel
+```
+
+```bash
+python -m torch.distributed.launch --nproc_per_node=2 main_dino.py --arch vit_small --data_path /workspace/orion --output_dir /workspace/output --batch_size_per_gpu 128
+```
+
+
+```bash
+python eval_knn.py --pretrained_weights "/workspace/output/checkpoint.pth" --dump_features "/workspace/dump_features" --data_path "/workspace/imagenet"
+```
+
+epoch | classifier result | Top1 | Top5 |
+|--- | ---|---|---|
+| 0 | 10-NN  |0.027327737653718525 | 0.1795822760101503  |
+| 0 | 20-NN  |0.035135662697638105 | 0.22642982627366778 |
+| 0 | 100-NN |0.035135662697638105 | 0.30060511419090374 |
+| 0 | 200-NN |0.031231700175678313 | 0.35526058949834083 |
 
 ## Pretrained models
 You can choose to download only the weights of the pretrained backbone used for downstream tasks, or the full checkpoint which contains backbone and projection head weights for both student and teacher networks. We also provide the backbone in `onnx` format, as well as detailed arguments and training/evaluation logs. Note that `DeiT-S` and `ViT-S` names refer exactly to the same architecture.

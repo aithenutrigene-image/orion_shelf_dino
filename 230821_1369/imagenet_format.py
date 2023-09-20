@@ -1,6 +1,6 @@
 import os
 import json
-from PIL import Image
+from PIL import Image, ImageOps
 from tqdm import tqdm
 
 def split_class(train = True):
@@ -25,6 +25,7 @@ def split_class(train = True):
         try:
             if ex_img_id != anno['image_id']:
                 img = Image.open(f'/workspace/230821_1369/images/{images[anno["image_id"]]}')
+                img = ImageOps.exif_transpose(img)
                 ex_img_id = anno['image_id']
             crop_img = img.crop((anno['bbox'][0],anno['bbox'][1],anno['bbox'][0] + anno['bbox'][2],anno['bbox'][1] + anno['bbox'][3]))
             crop_img.save(f'{sp}/{str(categories[anno["category_id"]])}/{str(anno["id"])}_{images[anno["image_id"]]}')
