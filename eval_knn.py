@@ -211,6 +211,7 @@ if __name__ == '__main__':
         distributed training; see https://pytorch.org/docs/stable/distributed.html""")
     parser.add_argument("--local_rank", default=0, type=int, help="Please ignore and do not set this argument.")
     parser.add_argument('--data_path', default='/path/to/imagenet/', type=str)
+    parser.add_argument('--category_num', default=1369, type=int)
     args = parser.parse_args()
 
     utils.init_distributed_mode(args)
@@ -237,6 +238,6 @@ if __name__ == '__main__':
         print("Features are ready!\nStart the k-NN classification.")
         for k in args.nb_knn:
             top1, top5 = knn_classifier(train_features, train_labels,
-                test_features, test_labels, k, args.temperature, 1369)
+                test_features, test_labels, k, args.temperature, args.category_num)
             print(f"{k}-NN classifier result: Top1: {top1}, Top5: {top5}")
     dist.barrier()

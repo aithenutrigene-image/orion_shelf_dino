@@ -19,7 +19,7 @@ PyTorch implementation and pretrained models for DINO. For details, see **Emergi
 
 이와 같이 진행시 라벨링에 많은 비용없이 작업 가능  
 
-imagenet 변환 코드 [/230821_1369/imagenet_format.py](https://github.com/aithenutrigene-image/Orion_Shelf_Classification_Test/blob/main/imagenet_format.py) 를 이용하여 오리온 이미지를 imagenet 형식으로 변경
+imagenet 변환 코드 [/dataset/imagenet_format.py](https://github.com/aithenutrigene-image/Orion_Shelf_Classification_Test/blob/main/imagenet_format.py) 를 이용하여 오리온 이미지를 imagenet 형식으로 변경
 
 
 몇몇 코드 수정 후 아래 코드 진행
@@ -63,12 +63,90 @@ python -m torch.distributed.launch --nproc_per_node=2 main_dino.py --arch vit_sm
 python eval_knn.py --pretrained_weights "/workspace/output/checkpoint.pth" --dump_features "/workspace/dump_features" --data_path "/workspace/imagenet"
 ```
 
-epoch | classifier result | Top1 | Top5 |
+| crop image train | classifier result | Top1 | Top5 |
 |--- | ---|---|---|
-| 0 | 10-NN  |0.027327737653718525 | 0.1795822760101503  |
-| 0 | 20-NN  |0.035135662697638105 | 0.22642982627366778 |
-| 0 | 100-NN |0.035135662697638105 | 0.30060511419090374 |
-| 0 | 200-NN |0.031231700175678313 | 0.35526058949834083 |
+| epoch 0  | 10-NN  |0.027327737653718525 | 0.1795822760101503  |
+| epoch 0 | 20-NN  |0.035135662697638105 | 0.22642982627366778 |
+| epoch 0 | 100-NN |0.035135662697638105 | 0.30060511419090374 |
+| epoch 0 | 200-NN |0.031231700175678313 | 0.35526058949834083 |
+| epoch 34 | 10-NN  | 0.031231700175678313 | 0.05075151278547726 |
+| epoch 34 | 20-NN  | 0.031231700175678313 | 0.07417528791723599 |
+| epoch 34 | 100-NN | 0.031231700175678313 | 0.14835057583447198 |
+| epoch 34 | 200-NN | 0.031231700175678313 | 0.14054265079055242 |  
+
+
+cropping 방식으로 모델 훈련 시 성능 향상이 보이지 않음  
+원본 이미지에 바로 적용하는 방식 적용
+
+
+| original image train | classifier result | Top1 | Top5 |
+| --- | --- | --- | --- |
+| epoch 100 | 10-NN  | 0.023423775131758737 | 0.3630685145422604 |
+| epoch 100 | 20-NN  | 0.023423775131758737 | 0.40991606480577786 |
+| epoch 100 | 100-NN | 0.10150302557095452  | 0.47628342767909426 |
+| epoch 100 | 200-NN | 0.1093109506148741   | 0.5894983408159281 |
+| without 알수없음 | 10-NN  | 0.02765486725663717 | 0.38716814159292035 |
+| without 알수없음 | 20-NN  | 0.0316055625790139  | 0.43852718078381797 |
+| without 알수없음 | 100-NN | 0.1027180783817952  | 0.497787610619469 |
+| without 알수없음 | 200-NN | 0.1145701643489254  | 0.604456384323641 |
+
+23.09.23~24 (토,일) 주말 간 원본 이미지 100epoch 훈련 진행 결과 cropping 보다 좋은 성능을 보이나 결국 10% 대의 낮은 성능을 보임.   
+데이터 셋의 한계 (supervised 14~20%)일지 아니면 현 모델의 한계일지 구분이 안되는 상황.
+1369 카테고리 데이터 셋이 아닌 322 데이터 셋을 활용하여 성능 확인 시도
+
+```bash
+python eval_knn.py --pretrained_weights "/workspaceoutput/ori/checkpoint.pth" --data_path "/workspace/dataset/imagenet_322"
+```
+
+| original image train | classifier result | Top1 | Top5 |
+| --- | --- | --- | --- |
+| without 알수없음 | 10-NN  | 36.18081094921093 | 56.16591406359108 |
+| without 알수없음 | 20-NN  | 35.608211908197944| 57.87440063311764 |
+| without 알수없음 | 100-NN | 30.347749173688374| 56.29626181276477 |
+| without 알수없음 | 200-NN | 27.29854289837531 | 53.30291885852614 |
+
+```bash
+python eval_knn.py --pretrained_weights "/workspaceoutput/crop/checkpoint.pth" --data_path "/workspace/dataset/imagenet_322"
+```
+
+| crop image train | classifier result | Top1 | Top5 |
+| --- | --- | --- | --- |
+| without 알수없음 | 10-NN  | 93.0636376332573  | 97.64908523811741 |
+| without 알수없음 | 20-NN  | 92.93794516083982 | 98.0866812532005 |
+| without 알수없음 | 100-NN | 92.21637726362832 | 98.36134258181649 |
+| without 알수없음 | 200-NN | 91.7461943112518  | 98.44979284018434 |
+
+crop 데이터셋을 이용할 경우 93% 대의 성능 확인  
+base 모델 성능도 비슷하게 나올지 의문
+
+```bash
+python eval_knn.py --data_path "/workspace/dataset/imagenet_322"
+```
+
+| base | classifier result | Top1 | Top5 |
+| --- | --- | --- | --- |
+| without 알수없음 | 10-NN  | 85.61985010008846 | 93.53847586239002 |
+| without 알수없음 | 20-NN  | 84.96811135422001 | 94.12969601042782 |
+| without 알수없음 | 100-NN | 82.5799543782878  | 93.9341743866673 |
+| without 알수없음 | 200-NN | 81.00181555793492 | 93.48726781807179 |
+
+실수 발견 322 category 변경면서 knn label 개수를 같이 축소하지 않음.  
+허나 성능은 93% 나온 상황
+args 에 category_num 을 추가하여 훈련 시작
+
+```bash
+python eval_knn.py --data_path "/workspace/dataset/imagenet_322" --category_num 322
+```
+
+| base | classifier result | Top1 | Top5 |
+| --- | --- | --- | --- |
+| without 알수없음 | 85.61985010008846 | 93.54778641590242 |
+| without 알수없음 | 84.96811135422001 | 94.12969601042782 |
+| without 알수없음 | 82.5799543782878  | 93.9341743866673 |
+| without 알수없음 | 81.00181555793492 | 93.48726781807179 |
+
+base 기준 성능 변화 없음 (소수점 3번째 부터 차이 발생).  
+예측 개수보다 부족할 경우 문제가 있고 많은 경우는 상관 없음으로 보임 
 
 ## Pretrained models
 You can choose to download only the weights of the pretrained backbone used for downstream tasks, or the full checkpoint which contains backbone and projection head weights for both student and teacher networks. We also provide the backbone in `onnx` format, as well as detailed arguments and training/evaluation logs. Note that `DeiT-S` and `ViT-S` names refer exactly to the same architecture.

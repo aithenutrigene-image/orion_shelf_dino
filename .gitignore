@@ -159,10 +159,10 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-230821_1369/annotations
-230821_1369/images
+dataset/*
+!dataset/imagenet_format.py
+
 dump_features
-imagenet
 dino_*.pth
 orion
 output

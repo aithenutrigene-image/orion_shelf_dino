@@ -3,12 +3,16 @@ import json
 from PIL import Image, ImageOps
 from tqdm import tqdm
 
+datapath = '230823_322'
+
 def split_class(train = True):
+    global datapath
+
     if train:
         sp = 'train'
     else:
         sp = 'valid'
-    f = open(f'annotations/annotation_{sp}.json')
+    f = open(f'{datapath}/annotations/annotation_{sp}.json')
     orion_anno = json.load(f)
     
     images = {}
@@ -24,7 +28,7 @@ def split_class(train = True):
         os.makedirs(f'{sp}/{str(categories[anno["category_id"]])}/', exist_ok=True)
         try:
             if ex_img_id != anno['image_id']:
-                img = Image.open(f'/workspace/230821_1369/images/{images[anno["image_id"]]}')
+                img = Image.open(f'{datapath}/images/{images[anno["image_id"]]}')
                 img = ImageOps.exif_transpose(img)
                 ex_img_id = anno['image_id']
             crop_img = img.crop((anno['bbox'][0],anno['bbox'][1],anno['bbox'][0] + anno['bbox'][2],anno['bbox'][1] + anno['bbox'][3]))
@@ -32,6 +36,7 @@ def split_class(train = True):
 
         except:
             print(f'images/{images[anno["image_id"]]}')
+
 if __name__ == '__main__':
     split_class(train = True)
     split_class(train = False)
