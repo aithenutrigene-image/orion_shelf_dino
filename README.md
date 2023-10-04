@@ -148,6 +148,20 @@ python eval_knn.py --data_path "/workspace/dataset/imagenet_322" --category_num 
 base 기준 성능 변화 없음 (소수점 3번째 부터 차이 발생).  
 예측 개수보다 부족할 경우 문제가 있고 많은 경우는 상관 없음으로 보임 
 
+
+추석 연휴 6일간 TITAN RTX GPU 2개로 훈련 진행 211 epoch 로 진행 train loss 1.92 로 추세를 보았을때 더 학습이 가능하나 1시간당 1.3 epoch 의 훈련 시간을 생각했을 때, 실제 시작되지 않은 프로젝트 임으로 훈련 중단 후 성능 평가
+
+| crop image | classifier result | Top1 | Top5 |
+| --- | --- | --- | --- |
+| epoch 211 without 알수없음 | 10-NN  | 93.48261254131558 | 97.86788324565896 |
+| epoch 211 without 알수없음 | 20-NN  | 93.42209394348494 | 98.26823704669242 |
+| epoch 211 without 알수없음 | 100-NN | 93.0543270797449  | 98.57548531260183 |
+| epoch 211 without 알수없음 | 200-NN | 92.53293608305013 | 98.71979889204414 |
+ 
+전에 비해 0.4~0.8 사이 향상
+성능 분석이 더 필요하나 현상황을 보았을때
+모델 변경 시 분류 모델 82% -> 93% 향상 가능
+
 ## Pretrained models
 You can choose to download only the weights of the pretrained backbone used for downstream tasks, or the full checkpoint which contains backbone and projection head weights for both student and teacher networks. We also provide the backbone in `onnx` format, as well as detailed arguments and training/evaluation logs. Note that `DeiT-S` and `ViT-S` names refer exactly to the same architecture.
 
