@@ -21,7 +21,7 @@ PyTorch implementation and pretrained models for DINO. For details, see **Emergi
 
 imagenet 변환 코드 [/dataset/imagenet_format.py](https://github.com/aithenutrigene-image/Orion_Shelf_Classification_Test/blob/main/imagenet_format.py) 를 이용하여 오리온 이미지를 imagenet 형식으로 변경
 
-
+## base 모델 성능 확인
 몇몇 코드 수정 후 아래 코드 진행
 
 첫 진행시
@@ -49,6 +49,7 @@ base 결과
 * 추출 이미지를 이용하여 self-supervised : DINO 모델 훈련 
 * 훈련 모델을 이용 evaluation 진행
 
+## crop image 모델 훈련
 207 서버에 pytorch/pytorch:1.12.1-cuda11.3-cudnn8-devel 환경을 이용하여 훈련 진행
 ```bash
 docker run --name orion-dino -it --gpus '"device=1,2"' --ipc=host -v `pwd`/orion_shelf_dino:/workspace pytorch/pytorch:1.12.1-cuda11.3-cudnn8-devel
@@ -78,6 +79,7 @@ python eval_knn.py --pretrained_weights "/workspace/output/checkpoint.pth" --dum
 cropping 방식으로 모델 훈련 시 성능 향상이 보이지 않음  
 원본 이미지에 바로 적용하는 방식 적용
 
+## original image 모델 훈련
 
 | original image train | classifier result | Top1 | Top5 |
 | --- | --- | --- | --- |
@@ -94,8 +96,9 @@ cropping 방식으로 모델 훈련 시 성능 향상이 보이지 않음
 데이터 셋의 한계 (supervised 14\~20%)일지 아니면 현 모델의 한계일지 구분이 안되는 상황.
 1369 카테고리 데이터 셋이 아닌 322 데이터 셋을 활용하여 성능 확인 시도
 
+## 322 dataset 모델 성능 확인
 ```bash
-python eval_knn.py --pretrained_weights "/workspaceoutput/ori/checkpoint.pth" --data_path "/workspace/dataset/imagenet_322"
+python eval_knn.py --pretrained_weights "/workspace/output/ori/checkpoint.pth" --data_path "/workspace/dataset/imagenet_322"
 ```
 
 | original image train | classifier result | Top1 | Top5 |
@@ -106,7 +109,7 @@ python eval_knn.py --pretrained_weights "/workspaceoutput/ori/checkpoint.pth" --
 | without 알수없음 | 200-NN | 27.29854289837531 | 53.30291885852614 |
 
 ```bash
-python eval_knn.py --pretrained_weights "/workspaceoutput/crop/checkpoint.pth" --data_path "/workspace/dataset/imagenet_322"
+python eval_knn.py --pretrained_weights "/workspace/output/crop/checkpoint.pth" --data_path "/workspace/dataset/imagenet_322"
 ```
 
 | crop image train | classifier result | Top1 | Top5 |
@@ -119,6 +122,8 @@ python eval_knn.py --pretrained_weights "/workspaceoutput/crop/checkpoint.pth" -
 crop 데이터셋을 이용할 경우 93% 대의 성능 확인  
 base 모델 성능도 비슷하게 나올지 의문
 
+## 322 dataset base 모델 성능 확인
+
 ```bash
 python eval_knn.py --data_path "/workspace/dataset/imagenet_322"
 ```
@@ -129,6 +134,10 @@ python eval_knn.py --data_path "/workspace/dataset/imagenet_322"
 | without 알수없음 | 20-NN  | 84.96811135422001 | 94.12969601042782 |
 | without 알수없음 | 100-NN | 82.5799543782878  | 93.9341743866673 |
 | without 알수없음 | 200-NN | 81.00181555793492 | 93.48726781807179 |
+
+
+## K-NN category_num 변경
+
 
 실수 발견 322 category 변경면서 knn label 개수를 같이 축소하지 않음.  
 허나 성능은 93% 나온 상황
@@ -148,6 +157,7 @@ python eval_knn.py --data_path "/workspace/dataset/imagenet_322" --category_num 
 base 기준 성능 변화 없음 (소수점 3번째 부터 차이 발생).  
 예측 개수보다 부족할 경우 문제가 있고 많은 경우는 상관 없음으로 보임 
 
+## crop image 300 epoch train
 
 추석 연휴 6일간 TITAN RTX GPU 2개로 훈련 진행 211 epoch 로 진행 train loss 1.92 로 추세를 보았을때 더 학습이 가능하나 1시간당 1.3 epoch 의 훈련 시간을 생각했을 때, 실제 시작되지 않은 프로젝트 임으로 훈련 중단 후 성능 평가
 
